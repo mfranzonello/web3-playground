@@ -1,0 +1,27 @@
+[
+  {
+    "address": "0x438D27A83880eA992B92F9F2A5254322a6e345E8",
+    "private_key": "227db205c18682fff5401cc87d5e5d2823f311905a7e2f82212b5a96c9f63ab9",
+    "nickname": "Mobi"
+  },
+  {
+    "address": "0x4b48C3C117B3c06294DE0fFa9b48BfF1a24CeBae",
+    "private_key": "97ad50934538fff3729363981c6ea886edd23c01ba014a3f83ac39b2d03d1329",
+    "nickname": "tset3"
+  },
+  {
+    "address": "0x26cD90BF01a925e128c981468F9D177e1f9EDd58",
+    "private_key": "bf83ffff488195c3e43ed8cb8537c3725ea09266832f93c747ea828a9114b73c",
+    "nickname": ""
+  },
+  {
+    "address": "0xd27C57aa317500cFf3F7687FBC6e735fAfEc7445",
+    "private_key": "bb780b266276256765aa14fc85f2fec3d285e0c9ebc76af670ceac91f86fae76",
+    "nickname": ""
+  },
+  {
+    "address": "0xd9cD442dc43e4dD8E8cFC0031033c910719694b3",
+    "private_key": "cb96797b4b232faa2a3ec856cf1341cd049cb0f5f752b6c5ea8d5539f0558c8b",
+    "nickname": "adfasdf"
+  }
+]

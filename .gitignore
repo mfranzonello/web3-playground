@@ -1,0 +1,26 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Copilot / Semantic indices
+**/CopilotIndices/
+**/FileContentIndex/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Streamlit data
+data/*.json
+
+# VS Code (just in case)
+.vscode/
+
+# Mac/Windows system files
+.DS_Store
+Thumbs.db
