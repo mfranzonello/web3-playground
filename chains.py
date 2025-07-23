@@ -7,4 +7,4 @@ def load_chains():
         return yaml.safe_load(f)
 
 CHAINS = load_chains()
-
+DEFAULT_CHAIN = next(iter(CHAINS))

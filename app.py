@@ -1,16 +1,19 @@
 ﻿import streamlit as st
 from wallet import create_wallet, get_wallets, load_all_wallets
 from balances import get_wallet_balance, update_wallet_balance, transfer, off_ramp
-from chains import CHAINS
+from chains import CHAINS, DEFAULT_CHAIN
 from transactions import save_transaction, load_transactions
 from datetime import datetime
 
 
 st.set_page_config(page_title="SimChain", layout="wide")
 
-# Initialize session state for active wallet
+# Initialize session state for active wallet and chain
 if "active_wallet_address" not in st.session_state:
     st.session_state.active_wallet_address = None
+
+if "active_chain" not in st.session_state:
+    st.session_state.active_chain = DEFAULT_CHAIN
 
 # ---- User Login UI ----
 st.sidebar.header("👤 User Login")
@@ -196,6 +199,48 @@ if st.button("Withdraw"):
     except ValueError as e:
         st.error(str(e))
 
+
+# ---- Smart Contract Interaction ----
+st.subheader("📜 Smart Contract Simulation")
+
+contract_types = ['Simple Call (e.g. view balance)',
+                  'Medium Call (e.g. transfer ownership)',
+                  'Complex Call (e.g. mint NFT, DAO vote)']
+chain_info = CHAINS[st.session_state.active_chain]
+scaled_gas_fees = {level: chain_info['gas_fee'] * chain_info['contract_multipliers'][level] for level in chain_info['contract_multipliers']} 
+contract_action = st.selectbox('Select interaction type',
+                               [f'{contract_type} - ${scaled_gas_fees[contract_type.split(" ")[0].lower()]:.2f}' for contract_type in contract_types]
+                                )
+contract_level = contract_action.split(' ')[0].lower()
+
+# Define gas multipliers based on complexity
+
+base_gas = chain_info["gas_fee"]
+gas_multiplier = chain_info["contract_multipliers"][contract_level]
+scaled_gas = base_gas * gas_multiplier
+
+
+if st.button("Simulate Contract Interaction"):
+    balance = get_wallet_balance(user_id, active_wallet["address"])["USDC"]
+    if balance < scaled_gas:
+        st.error(f"Not enough USDC to cover gas (${scaled_gas:.2f})")
+    else:
+        update_wallet_balance(user_id, active_wallet["address"], -scaled_gas)
+
+        save_transaction(user_id, {
+            "type": "contract_call",
+            "wallet": active_wallet["address"],
+            "chain": st.session_state.active_chain,
+            "timestamp": datetime.utcnow().isoformat(),
+            "gas_fee": scaled_gas,
+            "direction": "out",
+            "action": contract_action
+        })
+
+        st.success(f"Simulated: {contract_action} (gas: ${scaled_gas:.2f})")
+        st.rerun()
+
+
 # ---- Transaction History ----
 st.subheader("📜 Transaction History")
 
@@ -207,21 +252,26 @@ if wallet_txs:
     for tx in reversed(wallet_txs[-25:]):  # show latest 25
         ts = tx.get("timestamp", "unknown").replace("T", " ").split(".")[0]
         kind = tx["type"]
-        amt = tx["amount"]
+        amt = tx.get("amount")
         chain = tx.get("chain", "")
         gas = tx.get("gas_fee", 0)
         direction = tx.get("direction", "in")
 
-        if kind == "transfer_sent":
-            target = tx.get("recipient", "unknown")
-            st.write(f"🟥 [{ts}] Sent {amt:.2f} USDC → `{target[:6]}…{target[-4:]}` on {chain} (gas: ${gas})")
-        elif kind == "transfer_received":
-            sender = tx.get("sender", "unknown")
-            st.write(f"🟩 [{ts}] Received {amt:.2f} USDC ← `{sender[:6]}…{sender[-4:]}` on {chain}")
-        elif kind == "onramp":
-            st.write(f"💸 [{ts}] On-ramped {amt:.2f} USDC on {chain}")
-        elif kind == "offramp":
-            st.write(f"🏦 [{ts}] Off-ramped {amt:.2f} USDC on {chain}")
+        match kind:
+            case 'transfer_sent':
+                target = tx.get("recipient", "unknown")
+                st.write(f"🟥 [{ts}] Sent {amt:.2f} USDC → `{target[:6]}…{target[-4:]}` on {chain} (gas: ${gas})")
+            case 'transfer_received':
+                sender = tx.get("sender", "unknown")
+                st.write(f"🟩 [{ts}] Received {amt:.2f} USDC ← `{sender[:6]}…{sender[-4:]}` on {chain}")
+            case 'onramp':
+                st.write(f"💸 [{ts}] On-ramped {amt:.2f} USDC on {chain}")
+            case 'offramp':
+                st.write(f"🏦 [{ts}] Off-ramped {amt:.2f} USDC on {chain}")
+            case 'contract_call':
+                action = tx.get("action", "Unknown action")
+                st.write(f"📜 [{ts}] Contract Interaction – {action} on {chain} (gas: ${gas})")
+
 else:
     st.info("No transactions yet for this wallet.")
 
