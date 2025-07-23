@@ -12,16 +12,44 @@ st.set_page_config(page_title="SimChain", layout="wide")
 if "active_wallet_address" not in st.session_state:
     st.session_state.active_wallet_address = None
 
-# ---- User Login ----
+# ---- User Login UI ----
 st.sidebar.header("👤 User Login")
-user_id = st.sidebar.text_input("Enter your username", value="")
 
+from wallet import list_users
+
+existing_users = list_users()
+new_user = False
+
+if "user_id" not in st.session_state:
+    st.session_state.user_id = None
+
+login_mode = st.sidebar.radio("Select login method", ["Choose existing user", "Create new user"])
+
+if login_mode == "Choose existing user":
+    if existing_users:
+        selected_user = st.sidebar.selectbox("Select a user", existing_users)
+        if st.sidebar.button("Login as selected user"):
+            st.session_state.user_id = selected_user
+            st.rerun()
+    else:
+        st.sidebar.info("No users yet. Create one below.")
+elif login_mode == "Create new user":
+    new_username = st.sidebar.text_input("Choose a username")
+    if st.sidebar.button("Create & Login"):
+        if new_username in existing_users:
+            st.sidebar.error("Username already exists.")
+        elif not new_username.strip():
+            st.sidebar.error("Username can't be empty.")
+        else:
+            st.session_state.user_id = new_username.strip()
+            st.rerun()
+
+user_id = st.session_state.get("user_id", "")
 if not user_id:
     st.title("🔗 SimChain – Web3 Simulation Dashboard")
-    st.warning("Please enter a username in the sidebar to get started.")
+    st.warning("Please log in or create a user to get started.")
     st.stop()
 
-WALLET_FILE = f"data/{user_id}_wallets.json"
 
 
 # ---- Wallet Creation ----
@@ -88,7 +116,6 @@ if st.button("🔼 Simulate On-Ramp (Deposit $500 USDC)"):
     st.success("Deposited $500 USDC!")
     st.rerun()
 
-# ---- Transfer Funds ----
 # ---- Transfer Funds ----
 st.subheader("🔁 Simulate USDC Transfer")
 

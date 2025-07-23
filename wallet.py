@@ -5,6 +5,10 @@ import json
 import os
 import glob
 
+def list_users():
+    files = glob.glob("data/*_wallets.json")
+    return sorted([os.path.basename(f).replace("_wallets.json", "") for f in files])
+
 def load_all_wallets():
     all_wallets = []
     files = glob.glob("data/*_wallets.json")
