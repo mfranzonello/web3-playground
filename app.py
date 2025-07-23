@@ -1,9 +1,14 @@
-﻿import streamlit as st
+﻿from datetime import datetime
+
+import streamlit as st
+
 from wallet import create_wallet, get_wallets, load_all_wallets
 from balances import get_wallet_balance, update_wallet_balance, transfer, off_ramp
 from chains import CHAINS, DEFAULT_CHAIN
 from transactions import save_transaction, load_transactions
-from datetime import datetime
+from nfts import load_catalog, mint_nft, list_nfts_by_owner, transfer_nft
+from calculator import calculate_gas_fee
+
 
 
 st.set_page_config(page_title="SimChain", layout="wide")
@@ -119,6 +124,20 @@ if st.button("🔼 Simulate On-Ramp (Deposit $500 USDC)"):
     st.success("Deposited $500 USDC!")
     st.rerun()
 
+# ---- NFTs Owned ----
+st.subheader("🖼 NFTs Owned by This Wallet")
+
+owned_nfts = list_nfts_by_owner(owner_address=active_wallet["address"])
+if owned_nfts:
+    for nft in owned_nfts:
+        with st.expander(f"{nft['name']} (Token {nft['token_id'][:8]}…)"):
+            st.image(nft["image_url"], caption=nft["name"], use_container_width=True)
+            st.write(nft["description"])
+            st.text(f"Token ID: {nft['token_id']}")
+else:
+    st.info("This wallet doesn't own any NFTs yet.")
+
+
 # ---- Transfer Funds ----
 st.subheader("🔁 Simulate USDC Transfer")
 
@@ -207,38 +226,93 @@ contract_types = ['Simple Call (e.g. view balance)',
                   'Medium Call (e.g. transfer ownership)',
                   'Complex Call (e.g. mint NFT, DAO vote)']
 chain_info = CHAINS[st.session_state.active_chain]
-scaled_gas_fees = {level: chain_info['gas_fee'] * chain_info['contract_multipliers'][level] for level in chain_info['contract_multipliers']} 
+gas_fees = {level: calculate_gas_fee(chain_info, level) for level in chain_info['contract_multipliers']} 
 contract_action = st.selectbox('Select interaction type',
-                               [f'{contract_type} - ${scaled_gas_fees[contract_type.split(" ")[0].lower()]:.2f}' for contract_type in contract_types]
+                               [f'{contract_type} - ${gas_fees[contract_type.split(" ")[0].lower()]:.2f}' for contract_type in contract_types]
                                 )
 contract_level = contract_action.split(' ')[0].lower()
 
 # Define gas multipliers based on complexity
-
-base_gas = chain_info["gas_fee"]
-gas_multiplier = chain_info["contract_multipliers"][contract_level]
-scaled_gas = base_gas * gas_multiplier
-
+gas_fee = calculate_gas_fee(chain_info, contract_level)
+##base_gas = chain_info["gas_fee"]
+##gas_multiplier = chain_info["contract_multipliers"][contract_level]
+##scaled_gas = base_gas * gas_multiplier
 
 if st.button("Simulate Contract Interaction"):
     balance = get_wallet_balance(user_id, active_wallet["address"])["USDC"]
-    if balance < scaled_gas:
-        st.error(f"Not enough USDC to cover gas (${scaled_gas:.2f})")
+    if balance < gas_fee: ##scaled_gas:
+        st.error(f"Not enough USDC to cover gas (${gas_fee:.2f})")
     else:
-        update_wallet_balance(user_id, active_wallet["address"], -scaled_gas)
+        update_wallet_balance(user_id, active_wallet["address"], -gas_fee)
 
         save_transaction(user_id, {
             "type": "contract_call",
             "wallet": active_wallet["address"],
             "chain": st.session_state.active_chain,
             "timestamp": datetime.utcnow().isoformat(),
-            "gas_fee": scaled_gas,
+            "gas_fee": gas_fee,
             "direction": "out",
             "action": contract_action
         })
 
-        st.success(f"Simulated: {contract_action} (gas: ${scaled_gas:.2f})")
+        st.success(f"Simulated: {contract_action} (gas: ${gas_fee:.2f})")
         st.rerun()
+
+
+# ---- Mint NFT ----
+st.subheader("🖼 Mint NFT from Portfolio")
+
+catalog = load_catalog()
+if not catalog:
+    st.info("No portfolio catalog found. Add data/portfolio_catalog.json to enable NFT minting.")
+else:
+    # Build selection labels
+    asset_labels = [f"{a['title']} ({a['asset_id']})" for a in catalog]
+    asset_choice = st.selectbox("Choose an artwork to mint", asset_labels)
+    asset = catalog[asset_labels.index(asset_choice)]
+
+    # Optional override name/description
+    nft_name = st.text_input("NFT Name", value=asset["title"])
+    nft_desc = st.text_area("NFT Description", value=asset.get("description", ""))
+
+    # Use current chain for mint cost (treat mint as 'complex contract')
+    # Gas fee scaling re-uses your YAML/multipliers
+    chain_info = CHAINS[st.session_state.active_chain]
+    gas_fee = calculate_gas_fee(chain_info, 'complex')
+    st.info(f"Mint cost (gas): ${gas_fee:.2f} on {st.session_state.active_chain}")
+
+    if st.button("Mint NFT"):
+        # Check funds
+        bal = get_wallet_balance(user_id, active_wallet["address"])["USDC"]
+        if bal < gas_fee:
+            st.error("Insufficient USDC to cover mint gas.")
+        else:
+            # Deduct gas
+            update_wallet_balance(user_id, active_wallet["address"], -gas_fee)
+
+            # Mint NFT
+            nft = mint_nft(
+                asset={**asset, "title": nft_name, "description": nft_desc},
+                chain=st.session_state.active_chain,
+                owner_user=user_id,
+                owner_address=active_wallet["address"]
+            )
+
+            # Log tx
+            save_transaction(user_id, {
+                "type": "nft_mint",
+                "wallet": active_wallet["address"],
+                "token_id": nft["token_id"],
+                "asset_id": nft["asset_id"],
+                "amount": 0,
+                "chain": st.session_state.active_chain,
+                "timestamp": datetime.utcnow().isoformat(),
+                "gas_fee": gas_fee,
+                "direction": "out"
+            })
+
+            st.success(f"Minted NFT '{nft_name}' (Token {nft['token_id'][:8]}…)!")
+            st.rerun()
 
 
 # ---- Transaction History ----
@@ -271,6 +345,15 @@ if wallet_txs:
             case 'contract_call':
                 action = tx.get("action", "Unknown action")
                 st.write(f"📜 [{ts}] Contract Interaction – {action} on {chain} (gas: ${gas})")
+            case 'nft_mint':
+                name = tx.get("asset_id", "NFT")
+                st.write(f"🖼 [{ts}] Minted NFT {name} on {chain} (gas: ${gas})")
+            case 'nft_transfer':
+                token = tx.get("token_id", "")
+                to_addr = tx.get("recipient", "")
+                st.write(f"🖼🔁 [{ts}] Sent NFT {token[:8]}… to `{to_addr[:6]}…{to_addr[-4:]}` on {chain} (gas: ${gas})")
+
+
 
 else:
     st.info("No transactions yet for this wallet.")
