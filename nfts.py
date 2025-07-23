@@ -106,3 +106,27 @@ def get_nft(token_id):
             return nft
     return None
 
+def burn_nft(token_id: str):
+    nfts = _load_registry()
+    now = datetime.utcnow().isoformat()
+    updated = False
+
+    for nft in nfts:
+        if nft["token_id"] == token_id:
+            nft["owner_user"] = None
+            nft["owner_address"] = None
+            nft["burned"] = True
+            nft["history"].append({
+                "event": "burn",
+                "ts": now,
+                "chain": nft.get("chain", "unknown")
+            })
+            updated = True
+            break
+
+    if not updated:
+        raise ValueError(f"NFT with token_id {token_id} not found.")
+
+    _save_registry(nfts)
+
+

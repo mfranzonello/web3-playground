@@ -6,7 +6,7 @@ from wallet import create_wallet, get_wallets, load_all_wallets
 from balances import get_wallet_balance, update_wallet_balance, transfer, off_ramp
 from chains import CHAINS, DEFAULT_CHAIN
 from transactions import save_transaction, load_transactions
-from nfts import load_catalog, mint_nft, list_nfts_by_owner, transfer_nft
+from nfts import load_catalog, mint_nft, list_nfts_by_owner, transfer_nft, burn_nft
 from calculator import calculate_gas_fee
 
 
@@ -124,6 +124,15 @@ if st.button("🔼 Simulate On-Ramp (Deposit $500 USDC)"):
     st.success("Deposited $500 USDC!")
     st.rerun()
 
+# ---- List All Wallets ----
+all_wallets = load_all_wallets()
+recipient_options = [
+    f"{w['nickname']} ({w['address'][:6]}…{w['address'][-4:]}) — @{w['user_id']}"
+    if w['nickname'] else f"{w['address']} — @{w['user_id']}"
+    for w in all_wallets if w['address'] != active_wallet["address"]
+]
+recipient_wallets = [w for w in all_wallets if w['address'] != active_wallet["address"]]
+
 # ---- NFTs Owned ----
 st.subheader("🖼 NFTs Owned by This Wallet")
 
@@ -134,20 +143,103 @@ if owned_nfts:
             st.image(nft["image_url"], caption=nft["name"], use_container_width=True)
             st.write(nft["description"])
             st.text(f"Token ID: {nft['token_id']}")
+
+    st.markdown("---")
+    st.subheader("🔁 Transfer NFT")
+
+    nft_options = [f"{nft['name']} (Token {nft['token_id'][:8]}…)" for nft in owned_nfts]
+    selected_nft_label = st.selectbox("Select NFT to transfer", nft_options)
+    selected_nft = owned_nfts[nft_options.index(selected_nft_label)]
+
+    # Pick recipient wallet
+    recipient_nft_options = [
+        f"{w['nickname']} ({w['address'][:6]}…{w['address'][-4:]}) — @{w['user_id']}"
+        if w['nickname'] else f"{w['address']} — @{w['user_id']}"
+        for w in all_wallets if w['address'] != active_wallet["address"]
+    ]
+    recipient_wallets = [w for w in all_wallets if w['address'] != active_wallet["address"]]
+
+    if recipient_nft_options:
+        recipient_choice = st.selectbox("Transfer NFT to", recipient_nft_options)
+        recipient_wallet = recipient_wallets[recipient_nft_options.index(recipient_choice)]
+
+        if st.button("Confirm NFT Transfer"):
+            gas_fee = calculate_gas_fee(CHAINS[st.session_state.active_chain], "medium")
+            if balance["USDC"] < gas_fee:
+                st.error("Not enough USDC to cover gas.")
+            else:
+                update_wallet_balance(user_id, active_wallet["address"], -gas_fee)
+                transfer_nft(
+                    token_id=selected_nft["token_id"],
+                    ##sender_user_id=user_id,
+                    ##sender_address=active_wallet["address"],
+                    ##recipient_user_id=recipient_wallet["user_id"],
+                    ##recipient_address=recipient_wallet["address"]
+                    new_owner_user=recipient_wallet["user_id"],
+                    new_owner_address=recipient_wallet["address"]
+                )
+
+                save_transaction(user_id, {
+                    "type": "nft_transfer",
+                    "wallet": active_wallet["address"],
+                    "token_id": selected_nft["token_id"],
+                    "recipient": recipient_wallet["address"],
+                    "chain": st.session_state.active_chain,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "gas_fee": gas_fee,
+                    "direction": "out"
+                })
+                save_transaction(recipient_wallet["user_id"], {
+                    "type": "nft_received",
+                    "wallet": recipient_wallet["address"],
+                    "token_id": selected_nft["token_id"],
+                    "sender": active_wallet["address"],
+                    "chain": st.session_state.active_chain,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "gas_fee": 0,
+                    "direction": "in"
+                })
+
+                st.success("NFT transferred successfully!")
+                st.rerun()
+    else:
+        st.info("No other wallets to transfer to.")
+
+
+    st.markdown("---")
+    st.subheader("🔥 Burn NFT")
+
+    burn_nft_label = st.selectbox("Select NFT to burn", nft_options, key="burn_select")
+    nft_to_burn = owned_nfts[nft_options.index(burn_nft_label)]
+
+    if st.button("Confirm Burn"):
+        gas_fee = calculate_gas_fee(CHAINS[st.session_state.active_chain], "medium")
+        if balance["USDC"] < gas_fee:
+            st.error("Not enough USDC to cover gas.")
+        else:
+            update_wallet_balance(user_id, active_wallet["address"], -gas_fee)
+            burn_nft(nft_to_burn["token_id"])
+
+            save_transaction(user_id, {
+                "type": "nft_burn",
+                "wallet": active_wallet["address"],
+                "token_id": nft_to_burn["token_id"],
+                "chain": st.session_state.active_chain,
+                "timestamp": datetime.utcnow().isoformat(),
+                "gas_fee": gas_fee,
+                "direction": "out"
+            })
+
+            st.success("NFT burned successfully.")
+            st.rerun()
+
 else:
     st.info("This wallet doesn't own any NFTs yet.")
 
 
+
 # ---- Transfer Funds ----
 st.subheader("🔁 Simulate USDC Transfer")
-
-all_wallets = load_all_wallets()
-recipient_options = [
-    f"{w['nickname']} ({w['address'][:6]}…{w['address'][-4:]}) — @{w['user_id']}"
-    if w['nickname'] else f"{w['address']} — @{w['user_id']}"
-    for w in all_wallets if w['address'] != active_wallet["address"]
-]
-recipient_wallets = [w for w in all_wallets if w['address'] != active_wallet["address"]]
 
 if recipient_options:
     recipient_choice = st.selectbox("Choose recipient wallet", recipient_options)
@@ -352,6 +444,14 @@ if wallet_txs:
                 token = tx.get("token_id", "")
                 to_addr = tx.get("recipient", "")
                 st.write(f"🖼🔁 [{ts}] Sent NFT {token[:8]}… to `{to_addr[:6]}…{to_addr[-4:]}` on {chain} (gas: ${gas})")
+            case 'nft_received':
+                from_addr = tx.get('sender', '')
+                token = tx.get('token_id', '')
+                st.write(f"🖼⬅️ [{ts}] Received NFT {token[:8]}… from `{from_addr[:6]}…{from_addr[-4:]}` on {chain}")
+            case 'nft_burn':
+                token = tx.get("token_id", "")
+                st.write(f"🔥 [{ts}] Burned NFT {token[:8]}… on {chain} (gas: ${gas})")
+
 
 
 
