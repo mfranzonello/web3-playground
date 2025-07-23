@@ -1,0 +1,9 @@
+Ethereum:
+  symbol: ETH
+  gas_fee: 4.75
+Polygon:
+  symbol: MATIC
+  gas_fee: 0.02
+Solana:
+  symbol: SOL
+  gas_fee: 0.0005

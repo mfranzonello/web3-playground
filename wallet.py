@@ -3,6 +3,22 @@
 from web3 import Account
 import json
 import os
+import glob
+
+def load_all_wallets():
+    all_wallets = []
+    files = glob.glob("data/*_wallets.json")
+    for path in files:
+        user_id = os.path.basename(path).replace("_wallets.json", "")
+        with open(path, "r") as f:
+            wallets = json.load(f)
+            for w in wallets:
+                all_wallets.append({
+                    "user_id": user_id,
+                    "address": w["address"],
+                    "nickname": w.get("nickname", "")
+                })
+    return all_wallets
 
 def get_wallet_file(user_id):
     return f"data/{user_id}_wallets.json"
