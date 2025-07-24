@@ -6,10 +6,9 @@ from wallet import create_wallet, get_wallets, load_all_wallets
 from balances import get_wallet_balance, update_wallet_balance, transfer, off_ramp
 from chains import CHAINS, DEFAULT_CHAIN
 from transactions import save_transaction, load_transactions
-from nfts import load_catalog, mint_nft, list_nfts_by_owner, transfer_nft, burn_nft
+from nfts import load_catalog, mint_nft, list_nfts_by_owner, transfer_nft, burn_nft, get_nft
 from calculator import calculate_gas_fee
-
-
+from marketplace import list_nft_for_sale, get_listing, load_marketplace, remove_listing
 
 st.set_page_config(page_title="SimChain", layout="wide")
 
@@ -171,10 +170,6 @@ if owned_nfts:
                 update_wallet_balance(user_id, active_wallet["address"], -gas_fee)
                 transfer_nft(
                     token_id=selected_nft["token_id"],
-                    ##sender_user_id=user_id,
-                    ##sender_address=active_wallet["address"],
-                    ##recipient_user_id=recipient_wallet["user_id"],
-                    ##recipient_address=recipient_wallet["address"]
                     new_owner_user=recipient_wallet["user_id"],
                     new_owner_address=recipient_wallet["address"]
                 )
@@ -236,6 +231,51 @@ if owned_nfts:
 else:
     st.info("This wallet doesn't own any NFTs yet.")
 
+st.markdown("---")
+st.subheader("🛍 List NFT for Sale")
+
+# Reuse owned NFT labels
+listable_nfts = [nft for nft in owned_nfts if not get_listing(nft["token_id"])]
+if not listable_nfts:
+    st.info("All your NFTs are already listed or none available.")
+else:
+    nft_labels = [f"{n['name']} (Token {n['token_id'][:8]}…)" for n in listable_nfts]
+    selected_nft_label = st.selectbox("Select NFT to list", nft_labels, key="nft_to_list")
+    selected_nft = listable_nfts[nft_labels.index(selected_nft_label)]
+
+    sale_price = st.number_input("Set sale price (USDC)", min_value=1.0, step=1.0, format="%.2f")
+
+    gas_fee = calculate_gas_fee(CHAINS[st.session_state.active_chain], "medium")
+    st.info(f"Listing gas fee: ${gas_fee:.2f}")
+
+    if st.button("List NFT for Sale"):
+        balance = get_wallet_balance(user_id, active_wallet["address"])["USDC"]
+        if balance < gas_fee:
+            st.error("Not enough USDC to cover listing gas fee.")
+        else:
+            update_wallet_balance(user_id, active_wallet["address"], -gas_fee)
+
+            listing = list_nft_for_sale(
+                token_id=selected_nft["token_id"],
+                seller_user=user_id,
+                seller_address=active_wallet["address"],
+                price=sale_price,
+                chain=st.session_state.active_chain
+            )
+
+            save_transaction(user_id, {
+                "type": "nft_listed",
+                "wallet": active_wallet["address"],
+                "token_id": listing["token_id"],
+                "amount": sale_price,
+                "chain": st.session_state.active_chain,
+                "timestamp": datetime.utcnow().isoformat(),
+                "gas_fee": gas_fee,
+                "direction": "out"
+            })
+
+            st.success(f"NFT listed for {sale_price:.2f} USDC!")
+            st.rerun()
 
 
 # ---- Transfer Funds ----
@@ -451,8 +491,20 @@ if wallet_txs:
             case 'nft_burn':
                 token = tx.get("token_id", "")
                 st.write(f"🔥 [{ts}] Burned NFT {token[:8]}… on {chain} (gas: ${gas})")
-
-
+            case 'nft_listed':
+                price = tx.get("amount", 0)
+                token = tx.get("token_id", "")
+                st.write(f"🛍 [{ts}] Listed NFT {token[:8]}… for {price:.2f} USDC on {chain} (gas: ${gas})")
+            case 'nft_purchase':
+                seller = tx.get("seller", "unknown")
+                token = tx.get("token_id", "")
+                amt = tx.get("amount", 0)
+                st.write(f"💸 [{ts}] Bought NFT {token[:8]}… from `{seller[:6]}…{seller[-4:]}` for {amt:.2f} USDC on {chain} (gas: ${gas})")
+            case 'nft_sold':
+                buyer = tx.get("buyer", "unknown")
+                token = tx.get("token_id", "")
+                amt = tx.get("amount", 0)
+                st.write(f"💰 [{ts}] Sold NFT {token[:8]}… to `{buyer[:6]}…{buyer[-4:]}` for {amt:.2f} USDC on {chain}")
 
 
 else:
@@ -500,3 +552,86 @@ if st.button("Delete Active Wallet"):
     delete_wallet(user_id, active_wallet["address"])
     st.warning("Wallet deleted. Refreshing...")
     st.rerun()
+
+
+# ---- NFT Marketplace ----
+st.subheader("🏪 NFT Marketplace")
+
+marketplace = load_marketplace()
+if not marketplace:
+    st.info("No NFTs are currently listed for sale.")
+else:
+    for listing in marketplace:
+        nft = get_nft(listing["token_id"])
+        if not nft:
+            continue  # handle orphaned listing
+
+        is_my_nft = listing["seller_address"] == active_wallet["address"]
+
+        col1, col2 = st.columns([1, 2])
+        with col1:
+            st.image(nft["image_url"], caption=nft["name"], use_container_width=True)
+        with col2:
+            st.markdown(f"**{nft['name']}**")
+            st.markdown(f"*Listed by:* @{listing['seller_user']}")
+            st.markdown(f"*Price:* {listing['price']:.2f} USDC")
+            st.markdown(f"*Token:* `{nft['token_id'][:8]}…`")
+            st.markdown(f"*Chain:* {listing['chain']}")
+            st.markdown(nft["description"])
+
+            if not is_my_nft:
+                if st.button(f"💰 Buy for {listing['price']:.2f} USDC", key=f"buy_{nft['token_id']}"):
+                    buyer_balance = get_wallet_balance(user_id, active_wallet["address"])["USDC"]
+                    gas_fee = calculate_gas_fee(CHAINS[listing["chain"]], "complex")
+                    total_cost = listing["price"] + gas_fee
+
+                    if buyer_balance < total_cost:
+                        st.error(f"Not enough USDC to complete purchase. Need {total_cost:.2f}, have {buyer_balance:.2f}.")
+                    else:
+                        # Deduct from buyer
+                        update_wallet_balance(user_id, active_wallet["address"], -total_cost)
+
+                        # Credit seller
+                        update_wallet_balance(listing["seller_user"], listing["seller_address"], listing["price"])
+
+                        # Transfer NFT
+                        transfer_nft(
+                            token_id=nft["token_id"],
+                            new_owner_user=user_id,
+                            new_owner_address=active_wallet["address"],
+                            chain=listing["chain"]
+                        )
+
+                        # Remove from marketplace
+                        remove_listing(nft["token_id"])
+
+                        timestamp = datetime.utcnow().isoformat()
+
+                        # Buyer transaction
+                        save_transaction(user_id, {
+                            "type": "nft_purchase",
+                            "wallet": active_wallet["address"],
+                            "token_id": nft["token_id"],
+                            "amount": listing["price"],
+                            "chain": listing["chain"],
+                            "timestamp": timestamp,
+                            "gas_fee": gas_fee,
+                            "direction": "out",
+                            "seller": listing["seller_address"]
+                        })
+
+                        # Seller transaction
+                        save_transaction(listing["seller_user"], {
+                            "type": "nft_sold",
+                            "wallet": listing["seller_address"],
+                            "token_id": nft["token_id"],
+                            "amount": listing["price"],
+                            "chain": listing["chain"],
+                            "timestamp": timestamp,
+                            "gas_fee": 0,
+                            "direction": "in",
+                            "buyer": active_wallet["address"]
+                        })
+
+                        st.success("NFT purchase successful!")
+                        st.rerun()
