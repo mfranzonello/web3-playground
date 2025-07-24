@@ -1,0 +1,252 @@
+[
+  {
+    "type": "onramp",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "amount": 500,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T18:36:25.615854",
+    "gas_fee": 0,
+    "direction": "in"
+  },
+  {
+    "type": "offramp",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "amount": 100.0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T18:36:31.151211",
+    "gas_fee": 0,
+    "direction": "out"
+  },
+  {
+    "type": "transfer_sent",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "amount": 200.0,
+    "recipient": "0x825728099dCE4aE6BadAa23962dB20EF90300F51",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T18:36:43.165971",
+    "gas_fee": 4.75,
+    "direction": "out"
+  },
+  {
+    "type": "transfer_received",
+    "wallet": "0x825728099dCE4aE6BadAa23962dB20EF90300F51",
+    "amount": 200.0,
+    "sender": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T18:36:43.165971",
+    "gas_fee": 0,
+    "direction": "in"
+  },
+  {
+    "type": "transfer_sent",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "amount": 500.0,
+    "recipient": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T18:41:04.247569",
+    "gas_fee": 4.75,
+    "direction": "out"
+  },
+  {
+    "type": "transfer_sent",
+    "wallet": "0x825728099dCE4aE6BadAa23962dB20EF90300F51",
+    "amount": 510.0,
+    "recipient": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T18:41:25.649721",
+    "gas_fee": 4.75,
+    "direction": "out"
+  },
+  {
+    "type": "transfer_received",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "amount": 510.0,
+    "sender": "0x825728099dCE4aE6BadAa23962dB20EF90300F51",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T18:41:25.649721",
+    "gas_fee": 0,
+    "direction": "in"
+  },
+  {
+    "type": "contract_call",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T20:03:03.902146",
+    "gas_fee": 19.0,
+    "direction": "out",
+    "action": "Complex Call (e.g. mint NFT, DAO vote)"
+  },
+  {
+    "type": "contract_call",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T20:03:10.597083",
+    "gas_fee": 9.5,
+    "direction": "out",
+    "action": "Medium Call (e.g. transfer ownership)"
+  },
+  {
+    "type": "contract_call",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T20:03:29.390064",
+    "gas_fee": 9.5,
+    "direction": "out",
+    "action": "Medium Call (e.g. transfer ownership)"
+  },
+  {
+    "type": "contract_call",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T20:06:53.157192",
+    "gas_fee": 9.5,
+    "direction": "out",
+    "action": "Medium Call (e.g. transfer ownership)"
+  },
+  {
+    "type": "contract_call",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T20:06:58.658861",
+    "gas_fee": 4.75,
+    "direction": "out",
+    "action": "Simple Call (e.g. view balance)"
+  },
+  {
+    "type": "contract_call",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T20:07:00.984175",
+    "gas_fee": 19.0,
+    "direction": "out",
+    "action": "Complex Call (e.g. mint NFT, DAO vote)"
+  },
+  {
+    "type": "contract_call",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T20:28:12.086721",
+    "gas_fee": 19.0,
+    "direction": "out",
+    "action": "Complex Call (e.g. mint NFT, DAO vote) - 19.00"
+  },
+  {
+    "type": "onramp",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "amount": 500,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T21:57:33.818681",
+    "gas_fee": 0,
+    "direction": "in"
+  },
+  {
+    "type": "onramp",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "amount": 500,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T21:59:06.378736",
+    "gas_fee": 0,
+    "direction": "in"
+  },
+  {
+    "type": "transfer_sent",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "amount": 0.0,
+    "recipient": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T22:17:39.877276",
+    "gas_fee": 4.75,
+    "direction": "out"
+  },
+  {
+    "type": "contract_call",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T22:18:03.049915",
+    "gas_fee": 4.75,
+    "direction": "out",
+    "action": "Simple Call (e.g. view balance) - $4.75"
+  },
+  {
+    "type": "nft_mint",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "token_id": "f4baa734-43cb-4ebc-a8c2-1b90f92ba732",
+    "asset_id": "mobi_on_the_moon",
+    "amount": 0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T22:18:05.159907",
+    "gas_fee": 19.0,
+    "direction": "out"
+  },
+  {
+    "type": "nft_mint",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "token_id": "491f59f9-ece7-4333-956e-e9a544c12c8e",
+    "asset_id": "self_pawtrait",
+    "amount": 0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T22:18:11.116402",
+    "gas_fee": 19.0,
+    "direction": "out"
+  },
+  {
+    "type": "nft_transfer",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "token_id": "f4baa734-43cb-4ebc-a8c2-1b90f92ba732",
+    "recipient": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T23:25:30.902392",
+    "gas_fee": 9.5,
+    "direction": "out"
+  },
+  {
+    "type": "nft_received",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "token_id": "f4baa734-43cb-4ebc-a8c2-1b90f92ba732",
+    "sender": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T23:33:58.977541",
+    "gas_fee": 0,
+    "direction": "in"
+  },
+  {
+    "type": "contract_call",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-24T00:18:21.495787",
+    "gas_fee": 4.75,
+    "direction": "out",
+    "action": "Simple Call (e.g. view balance) - $4.75"
+  },
+  {
+    "type": "nft_listed",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "token_id": "f4baa734-43cb-4ebc-a8c2-1b90f92ba732",
+    "amount": 20.0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-24T00:18:33.408136",
+    "gas_fee": 9.5,
+    "direction": "out"
+  },
+  {
+    "type": "nft_listed",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "token_id": "491f59f9-ece7-4333-956e-e9a544c12c8e",
+    "amount": 20.0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-24T00:20:53.602944",
+    "gas_fee": 9.5,
+    "direction": "out"
+  },
+  {
+    "type": "nft_sold",
+    "wallet": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "token_id": "f4baa734-43cb-4ebc-a8c2-1b90f92ba732",
+    "amount": 20.0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-24T00:21:12.317908",
+    "gas_fee": 0,
+    "direction": "in",
+    "buyer": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009"
+  }
+]

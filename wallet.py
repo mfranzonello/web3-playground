@@ -5,27 +5,47 @@ import json
 import os
 import glob
 
+def get_wallet_file(user_id):
+    return f"data/users/{user_id}/wallets.json"
+
+def ensure_user_dir(user_id):
+    path = os.path.dirname(get_wallet_file(user_id))
+    os.makedirs(path, exist_ok=True)
+
+# ----------- User Utilities -----------
+
 def list_users():
-    files = glob.glob("data/*_wallets.json")
-    return sorted([os.path.basename(f).replace("_wallets.json", "") for f in files])
+    """Return all user IDs based on subdirectories in /data/users/"""
+    user_root = "data/users"
+    if not os.path.exists(user_root):
+        return []
+    return sorted([name for name in os.listdir(user_root) if os.path.isdir(os.path.join(user_root, name))])
+
+# ----------- Wallet Operations -----------
 
 def load_all_wallets():
+    """Load all wallets from all user folders"""
     all_wallets = []
-    files = glob.glob("data/*_wallets.json")
-    for path in files:
-        user_id = os.path.basename(path).replace("_wallets.json", "")
-        with open(path, "r") as f:
-            wallets = json.load(f)
-            for w in wallets:
-                all_wallets.append({
-                    "user_id": user_id,
-                    "address": w["address"],
-                    "nickname": w.get("nickname", "")
-                })
-    return all_wallets
+    user_root = "data/users"
+    if not os.path.exists(user_root):
+        return []
 
-def get_wallet_file(user_id):
-    return f"data/{user_id}_wallets.json"
+    for user_id in os.listdir(user_root):
+        wallet_file = os.path.join(user_root, user_id, "wallets.json")
+        if not os.path.exists(wallet_file):
+            continue
+        with open(wallet_file, "r") as f:
+            try:
+                wallets = json.load(f)
+                for w in wallets:
+                    all_wallets.append({
+                        "user_id": user_id,
+                        "address": w["address"],
+                        "nickname": w.get("nickname", "")
+                    })
+            except json.JSONDecodeError:
+                pass  # Could add logging here
+    return all_wallets
 
 def create_wallet(user_id, nickname=None):
     acct = Account.create()

@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 def get_tx_file(user_id):
-    return f"data/{user_id}_transactions.json"
+    return f"data/users/{user_id}/transactions.json"
 
 def load_transactions(user_id):
     path = get_tx_file(user_id)

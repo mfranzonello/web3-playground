@@ -4,7 +4,7 @@ import json
 import os
 
 def get_balance_file(user_id):
-    return f"data/{user_id}_balances.json"
+    return f"data/users/{user_id}/balances.json"
 
 def load_balances(user_id):
     path = get_balance_file(user_id)

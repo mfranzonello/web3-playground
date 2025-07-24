@@ -1,0 +1,106 @@
+[
+  {
+    "type": "transfer_received",
+    "wallet": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "amount": 500.0,
+    "sender": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T18:41:04.247569",
+    "gas_fee": 0,
+    "direction": "in"
+  },
+  {
+    "type": "transfer_received",
+    "wallet": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "amount": 0.0,
+    "sender": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T22:17:39.877276",
+    "gas_fee": 0,
+    "direction": "in"
+  },
+  {
+    "type": "nft_received",
+    "wallet": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "token_id": "f4baa734-43cb-4ebc-a8c2-1b90f92ba732",
+    "sender": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T23:25:30.904392",
+    "gas_fee": 0,
+    "direction": "in"
+  },
+  {
+    "type": "nft_transfer",
+    "wallet": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "token_id": "f4baa734-43cb-4ebc-a8c2-1b90f92ba732",
+    "recipient": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T23:33:58.976539",
+    "gas_fee": 9.5,
+    "direction": "out"
+  },
+  {
+    "type": "nft_mint",
+    "wallet": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "token_id": "513fe01d-dc07-44ba-92a1-d92c1d136cd3",
+    "asset_id": "mobi_on_the_moon",
+    "amount": 0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T23:34:08.362617",
+    "gas_fee": 19.0,
+    "direction": "out"
+  },
+  {
+    "type": "nft_burn",
+    "wallet": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "token_id": "513fe01d-dc07-44ba-92a1-d92c1d136cd3",
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T23:34:10.103504",
+    "gas_fee": 9.5,
+    "direction": "out"
+  },
+  {
+    "type": "nft_mint",
+    "wallet": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "token_id": "d0e5b91b-926c-4a72-82a2-771ffe5ec9ae",
+    "asset_id": "mobi_on_the_moon",
+    "amount": 0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T23:34:26.853421",
+    "gas_fee": 19.0,
+    "direction": "out"
+  },
+  {
+    "type": "nft_mint",
+    "wallet": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "token_id": "812be380-4329-4c8f-a373-09b256a7886a",
+    "asset_id": "wanderer",
+    "amount": 0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-23T23:34:33.311766",
+    "gas_fee": 19.0,
+    "direction": "out"
+  },
+  {
+    "type": "nft_purchase",
+    "wallet": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "token_id": "f4baa734-43cb-4ebc-a8c2-1b90f92ba732",
+    "amount": 20.0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-24T00:21:12.317908",
+    "gas_fee": 19.0,
+    "direction": "out",
+    "seller": "0xe7fd10f43d4312BE5af62fe468B2AdCCC5a5F4d0"
+  },
+  {
+    "type": "nft_mint",
+    "wallet": "0xcDBEFc87358344C0EdAcF3E525E89cd746B9B009",
+    "token_id": "6c66b68e-3e68-46c9-a693-f800a84c9a1f",
+    "asset_id": "wanderer",
+    "amount": 0,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-24T00:29:59.436456",
+    "gas_fee": 19.0,
+    "direction": "out"
+  }
+]

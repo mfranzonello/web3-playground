@@ -1,4 +1,5 @@
 ﻿from datetime import datetime
+from venv import create
 
 import streamlit as st
 
@@ -7,10 +8,11 @@ from balances import get_wallet_balance, update_wallet_balance, transfer, off_ra
 from chains import CHAINS, DEFAULT_CHAIN
 from transactions import save_transaction, load_transactions
 from nfts import load_catalog, mint_nft, list_nfts_by_owner, transfer_nft, burn_nft, get_nft
-from calculator import calculate_gas_fee
 from marketplace import list_nft_for_sale, get_listing, load_marketplace, remove_listing
+from calculator import calculate_gas_fee
+from users import create_new_user
 
-st.set_page_config(page_title="SimChain", layout="wide")
+st.set_page_config(page_title="Crossmobi", layout="wide")
 
 # Initialize session state for active wallet and chain
 if "active_wallet_address" not in st.session_state:
@@ -48,12 +50,13 @@ elif login_mode == "Create new user":
         elif not new_username.strip():
             st.sidebar.error("Username can't be empty.")
         else:
-            st.session_state.user_id = new_username.strip()
+            username = create_new_user(new_username)
+            st.session_state.user_id = username
             st.rerun()
 
 user_id = st.session_state.get("user_id", "")
 if not user_id:
-    st.title("🔗 SimChain – Web3 Simulation Dashboard")
+    st.title("🔗 Crossmobi – Web3 Simulation Dashboard")
     st.warning("Please log in or create a user to get started.")
     st.stop()
 

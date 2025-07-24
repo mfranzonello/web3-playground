@@ -1,0 +1,11 @@
+[
+  {
+    "type": "onramp",
+    "wallet": "0x1CA9Eab43Dc6683aa9b327Db315B554ECd7200fe",
+    "amount": 500,
+    "chain": "Ethereum",
+    "timestamp": "2025-07-24T00:39:16.113293",
+    "gas_fee": 0,
+    "direction": "in"
+  }
+]
